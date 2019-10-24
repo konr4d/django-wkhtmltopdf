@@ -8,20 +8,14 @@ import sys
 import shlex
 from tempfile import NamedTemporaryFile
 
-from django.utils.encoding import smart_text
-
-try:
-    from urllib.request import pathname2url
-    from urllib.parse import urljoin
-except ImportError:  # Python2
-    from urllib import pathname2url
-    from urlparse import urljoin
+from urllib.request import pathname2url
+from urllib.parse import urljoin
 
 import django
 from django.conf import settings
 from django.template import loader
 from django.template.context import Context, RequestContext
-from django.utils import six
+from six import text_type, string_types
 
 from .subprocess import check_output
 
@@ -66,7 +60,7 @@ def _options_to_args(**options):
         flags.append(formatted_flag)
         if accepts_no_arguments:
             continue
-        flags.append(six.text_type(value))
+        flags.append(text_type(value))
     return flags
 
 
@@ -100,7 +94,7 @@ def wkhtmltopdf(pages, output=None, **kwargs):
                     orientation='Landscape',
                     disable_javascript=True)
     """
-    if isinstance(pages, six.string_types):
+    if isinstance(pages, string_types):
         # Support a single page.
         pages = [pages]
 
@@ -257,7 +251,7 @@ def http_quote(string):
     valid ascii charset string you can use in, say, http headers and the
     like.
     """
-    if isinstance(string, six.text_type):
+    if isinstance(string, text_type):
         try:
             import unidecode
         except ImportError:
@@ -327,7 +321,6 @@ def render_to_temporary_file(template, context, request=None, mode='w+b',
             content = render(context)
         else:
             content = render(context, request)
-    content = smart_text(content)
     content = make_absolute_paths(content)
 
     try:

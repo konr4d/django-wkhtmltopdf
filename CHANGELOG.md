@@ -5,6 +5,12 @@ UPCOMING
 --------
 * Fix AttributeError exception handling to only catch specific AttributeError.
 
+3.2.0.1
+-------
+
+* Dropped support for Python<3.4.
+* Dropped support for Django<2.
+
 3.2.0
 -----
 
