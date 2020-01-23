@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 from copy import copy
 from itertools import chain
 import os
@@ -15,7 +13,7 @@ import django
 from django.conf import settings
 from django.template import loader
 from django.template.context import Context, RequestContext
-from six import text_type, string_types
+import six
 
 from .subprocess import check_output
 
@@ -31,7 +29,6 @@ NO_ARGUMENT_OPTIONS = ['--collate', '--no-collate', '-H', '--extended-help', '-g
                        '--disable-forms', '--enable-forms', '--images', '--no-images',
                        '--disable-internal-links', '--enable-internal-links', '-n',
                        '--disable-javascript', '--enable-javascript', '--keep-relative-links',
-                       '--load-error-handling', '--load-media-error-handling',
                        '--disable-local-file-access', '--enable-local-file-access',
                        '--exclude-from-outline', '--include-in-outline', '--disable-plugins',
                        '--enable-plugins', '--print-media-type', '--no-print-media-type',
@@ -60,7 +57,7 @@ def _options_to_args(**options):
         flags.append(formatted_flag)
         if accepts_no_arguments:
             continue
-        flags.append(text_type(value))
+        flags.append(six.text_type(value))
     return flags
 
 
@@ -94,7 +91,7 @@ def wkhtmltopdf(pages, output=None, **kwargs):
                     orientation='Landscape',
                     disable_javascript=True)
     """
-    if isinstance(pages, string_types):
+    if isinstance(pages, six.string_types):
         # Support a single page.
         pages = [pages]
 
@@ -251,7 +248,7 @@ def http_quote(string):
     valid ascii charset string you can use in, say, http headers and the
     like.
     """
-    if isinstance(string, text_type):
+    if isinstance(string, six.text_type):
         try:
             import unidecode
         except ImportError:
@@ -291,13 +288,14 @@ def make_absolute_paths(content):
         if not x['root'].endswith('/'):
             x['root'] += '/'
 
-        occur_pattern = '''["|']({0}.*?)["|']'''
+        occur_pattern = '''(["|']{0}.*?["|'])'''
         occurences = re.findall(occur_pattern.format(x['url']), content)
         occurences = list(set(occurences))  # Remove dups
         for occur in occurences:
-            content = content.replace(occur,
+            content = content.replace(occur, '"%s"' % (
                                       pathname2fileurl(x['root']) +
-                                      occur[len(x['url']):])
+                                      occur[1 + len(x['url']): -1]))
+
 
     return content
 
